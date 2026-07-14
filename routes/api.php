@@ -1,0 +1,41 @@
+<?php
+
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\GymController;
+use App\Http\Controllers\Api\LeaderboardController;
+use App\Http\Controllers\Api\MachineController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\ProgressController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\WorkoutSetController;
+use Illuminate\Support\Facades\Route;
+
+Route::post('auth/register', [AuthController::class, 'register']);
+Route::post('auth/login', [AuthController::class, 'login']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('auth/logout', [AuthController::class, 'logout']);
+    Route::get('auth/me', [AuthController::class, 'me']);
+    Route::patch('profile', [ProfileController::class, 'update']);
+    Route::post('profile/avatar', [ProfileController::class, 'uploadAvatar']);
+
+    Route::get('gyms', [GymController::class, 'index']);
+    Route::post('gyms/checkin', [GymController::class, 'checkin']);
+    Route::get('gyms/checkin/latest', [GymController::class, 'latestCheckin']);
+    Route::get('gyms/{gym}/active-checkins', [GymController::class, 'activeCheckins']);
+
+    Route::get('machines', [MachineController::class, 'index']);
+    Route::get('machines/{machine}/progress', [ProgressController::class, 'show']);
+
+    Route::get('users/{user}', [UserController::class, 'show']);
+    Route::get('users/{user}/sessions', [UserController::class, 'sessions']);
+
+    Route::get('workout-sets', [WorkoutSetController::class, 'index']);
+    Route::post('workout-sets', [WorkoutSetController::class, 'store']);
+
+    Route::get('leaderboard', [LeaderboardController::class, 'show']);
+
+    Route::get('notifications', [NotificationController::class, 'index']);
+    Route::post('notifications/read-all', [NotificationController::class, 'markAllRead']);
+});
