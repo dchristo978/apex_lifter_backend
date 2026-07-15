@@ -3,14 +3,15 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Carbon\CarbonInterface;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Fortify\Contracts\PasskeyUser;
@@ -97,6 +98,43 @@ class User extends Authenticatable implements PasskeyUser
     public function challengesReceived(): HasMany
     {
         return $this->hasMany(Challenge::class, 'opponent_id');
+    }
+
+    public function activities(): HasMany
+    {
+        return $this->hasMany(Activity::class);
+    }
+
+    /**
+     * Follow edges where this lifter is the follower. The pivot rows in
+     * `follows`; `following()` / `followers()` resolve them to users.
+     */
+    public function follows(): HasMany
+    {
+        return $this->hasMany(Follow::class, 'follower_id');
+    }
+
+    /**
+     * The lifters this user follows.
+     */
+    public function following(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'followee_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * The lifters who follow this user.
+     */
+    public function followers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'follows', 'followee_id', 'follower_id')
+            ->withTimestamps();
+    }
+
+    public function isFollowing(User $other): bool
+    {
+        return $this->following()->whereKey($other->id)->exists();
     }
 
     /**

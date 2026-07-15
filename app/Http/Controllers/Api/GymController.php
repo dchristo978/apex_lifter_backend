@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Activity;
 use App\Models\Checkin;
 use App\Models\Gym;
 use App\Models\WorkoutSet;
@@ -86,6 +87,11 @@ class GymController extends Controller
             'user_id' => $request->user()->id,
             'gym_id' => $nearest['gym']->id,
             'checked_in_at' => now(),
+        ]);
+
+        Activity::record($request->user()->id, Activity::TYPE_CHECKIN, $checkin->id, [
+            'gym_id' => $nearest['gym']->id,
+            'gym_name' => $nearest['gym']->name,
         ]);
 
         return response()->json([

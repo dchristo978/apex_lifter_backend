@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Activity;
 use App\Models\Challenge;
 use App\Models\ChallengeVote;
 use App\Models\RankNotification;
@@ -107,6 +108,12 @@ class ChallengeService
                 'You won a challenge! 🏅',
                 "The arena crowned you winner on {$machineName}. A medal has been added to your profile.",
             );
+
+            Activity::record($winner->id, Activity::TYPE_MEDAL, $challenge->id, [
+                'machine_name' => $machineName,
+                'defeated_id' => $loser?->id,
+                'defeated_name' => $loser?->name,
+            ]);
         }
 
         if ($loser !== null) {

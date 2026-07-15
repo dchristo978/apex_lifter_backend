@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Controllers\Api\ActivityController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ChallengeController;
+use App\Http\Controllers\Api\FeedController;
+use App\Http\Controllers\Api\FollowController;
 use App\Http\Controllers\Api\GymController;
 use App\Http\Controllers\Api\LeaderboardController;
 use App\Http\Controllers\Api\MachineController;
@@ -42,6 +45,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('users/{user}', [UserController::class, 'show']);
     Route::get('users/{user}/sessions', [UserController::class, 'sessions']);
     Route::get('users/{user}/medals', [UserController::class, 'medals']);
+
+    // Social graph & activity feed
+    Route::post('users/{user}/follow', [FollowController::class, 'store']);
+    Route::delete('users/{user}/follow', [FollowController::class, 'destroy']);
+    Route::get('users/{user}/followers', [FollowController::class, 'followers']);
+    Route::get('users/{user}/following', [FollowController::class, 'following']);
+    Route::get('follow-suggestions', [FollowController::class, 'suggestions']);
+    Route::get('feed', [FeedController::class, 'index']);
+
+    // Feed reactions & comments
+    Route::post('activities/{activity}/kudos', [ActivityController::class, 'kudos']);
+    Route::delete('activities/{activity}/kudos', [ActivityController::class, 'unkudos']);
+    Route::get('activities/{activity}/comments', [ActivityController::class, 'comments']);
+    Route::post('activities/{activity}/comments', [ActivityController::class, 'comment']);
+    Route::delete('activities/{activity}/comments/{comment}', [ActivityController::class, 'deleteComment']);
 
     Route::get('workout-sets', [WorkoutSetController::class, 'index']);
     Route::post('workout-sets', [WorkoutSetController::class, 'store']);

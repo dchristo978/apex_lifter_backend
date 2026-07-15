@@ -17,17 +17,23 @@ class UserController extends Controller
      * Champion badges arrive with the MVP 2 leaderboard archives; until then
      * the collection is empty.
      */
-    public function show(User $user): JsonResponse
+    public function show(Request $request, User $user): JsonResponse
     {
         $sets = $user->workoutSets();
 
         $homeGym = $user->homeGym();
+
+        $viewer = $request->user();
 
         return response()->json([
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'avatar_url' => $user->avatarUrl(),
+                'is_self' => $viewer->id === $user->id,
+                'is_following' => $viewer->id !== $user->id && $viewer->isFollowing($user),
+                'followers_count' => $user->followers()->count(),
+                'following_count' => $user->following()->count(),
                 'gender' => $user->gender,
                 'age_bracket' => $user->ageBracket(),
                 'weight_class' => $user->weightClass(),

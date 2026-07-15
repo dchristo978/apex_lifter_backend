@@ -80,6 +80,8 @@ class PushNotifier
                         'notification_id' => (string) $notification->id,
                         'challenge_id' => (string) ($notification->challenge_id ?? ''),
                         'machine_id' => (string) ($notification->machine_id ?? ''),
+                        // The related user (e.g. the new follower) for profile deep-links.
+                        'actor_id' => (string) ($notification->overtaken_by_user_id ?? ''),
                     ],
                     'android' => ['priority' => 'high'],
                     'apns' => [

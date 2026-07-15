@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Activity;
 use App\Models\WorkoutSet;
 use App\Services\LeaderboardService;
 use Illuminate\Http\JsonResponse;
@@ -34,14 +35,34 @@ class WorkoutSetController extends Controller
             'reps' => ['required', 'integer', 'min:1', 'max:100'],
         ]);
 
+        $userId = $request->user()->id;
+
+        // A set beats the lifter's previous best weight on this machine → PR.
+        // Read the prior max before inserting so the new set can't count itself.
+        $previousBest = WorkoutSet::query()
+            ->where('user_id', $userId)
+            ->where('machine_id', $data['machine_id'])
+            ->max('weight_kg');
+
         $set = WorkoutSet::create([
             ...$data,
-            'user_id' => $request->user()->id,
+            'user_id' => $userId,
             'estimated_1rm' => WorkoutSet::epley((float) $data['weight_kg'], (int) $data['reps']),
             'performed_at' => now(),
         ]);
 
         $this->leaderboard->notifyOvertaken($set);
+
+        if ($previousBest === null || (float) $data['weight_kg'] > (float) $previousBest) {
+            $set->loadMissing('machine:id,name');
+            Activity::record($userId, Activity::TYPE_PR, $set->id, [
+                'machine_id' => $set->machine_id,
+                'machine_name' => $set->machine?->name,
+                'weight_kg' => (float) $set->weight_kg,
+                'reps' => (int) $set->reps,
+                'estimated_1rm' => (float) $set->estimated_1rm,
+            ]);
+        }
 
         return response()->json([
             'workout_set' => $set->unsetRelation('user')->load('machine:id,name,category'),
