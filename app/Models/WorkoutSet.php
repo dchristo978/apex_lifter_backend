@@ -25,6 +25,12 @@ class WorkoutSet extends Model
 {
     use HasFactory;
 
+    /**
+     * How long after logging a set the lifter may still delete it. Past this
+     * window the set is locked so leaderboards and 1RMs stay trustworthy.
+     */
+    public const EDIT_WINDOW_MINUTES = 30;
+
     protected function casts(): array
     {
         return [
@@ -44,6 +50,14 @@ class WorkoutSet extends Model
         }
 
         return round($weightKg * (1 + $reps / 30), 2);
+    }
+
+    /**
+     * True while the set is still within its editable window.
+     */
+    public function isEditable(): bool
+    {
+        return $this->performed_at->gt(now()->subMinutes(self::EDIT_WINDOW_MINUTES));
     }
 
     public function user(): BelongsTo

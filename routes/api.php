@@ -45,6 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('workout-sets', [WorkoutSetController::class, 'index']);
     Route::post('workout-sets', [WorkoutSetController::class, 'store']);
+    Route::delete('workout-sets/{workoutSet}', [WorkoutSetController::class, 'destroy']);
 
     Route::get('leaderboard', [LeaderboardController::class, 'show']);
 

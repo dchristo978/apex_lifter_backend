@@ -47,4 +47,22 @@ class WorkoutSetController extends Controller
             'workout_set' => $set->unsetRelation('user')->load('machine:id,name,category'),
         ], 201);
     }
+
+    public function destroy(Request $request, WorkoutSet $workoutSet): JsonResponse
+    {
+        if ($workoutSet->user_id !== $request->user()->id) {
+            abort(403, 'Kamu hanya bisa menghapus set milikmu sendiri.');
+        }
+
+        if (! $workoutSet->isEditable()) {
+            abort(403, sprintf(
+                'Set hanya bisa dihapus dalam %d menit setelah dicatat.',
+                WorkoutSet::EDIT_WINDOW_MINUTES,
+            ));
+        }
+
+        $workoutSet->delete();
+
+        return response()->json(['deleted' => true]);
+    }
 }
