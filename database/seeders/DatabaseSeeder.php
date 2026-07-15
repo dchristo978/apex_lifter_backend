@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             GymSeeder::class,
             MachineSeeder::class,
+            TestDataSeeder::class,
         ]);
     }
 }
