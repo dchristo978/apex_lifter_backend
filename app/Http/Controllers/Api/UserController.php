@@ -40,9 +40,11 @@ class UserController extends Controller
                     'total_volume_kg' => round((float) (clone $sets)->sum(DB::raw('weight_kg * reps')), 1),
                     'machines_trained' => (clone $sets)->distinct('machine_id')->count('machine_id'),
                     'best_estimated_1rm' => round((float) (clone $sets)->max('estimated_1rm'), 1),
+                    'week_streak' => $user->weekStreak(),
                 ],
                 'records' => $this->heaviestRecords($user),
                 'badges' => [],
+                'medals' => $user->medalsCount(),
             ],
         ]);
     }

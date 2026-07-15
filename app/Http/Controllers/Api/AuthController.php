@@ -87,6 +87,7 @@ class AuthController extends Controller
             'body_weight_stale' => $user->bodyWeightStale(),
             'avatar_url' => $user->avatarUrl(),
             'featured_machine_ids' => $user->featuredMachineIds(),
+            'week_streak' => $user->weekStreak(),
         ];
     }
 }

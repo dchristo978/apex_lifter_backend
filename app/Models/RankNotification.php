@@ -11,15 +11,17 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property int $user_id
+ * @property string $type
  * @property int $machine_id
  * @property int|null $overtaken_by_user_id
+ * @property int|null $challenge_id
  * @property string $title
  * @property string $body
  * @property Carbon|null $read_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['user_id', 'machine_id', 'overtaken_by_user_id', 'title', 'body', 'read_at'])]
+#[Fillable(['user_id', 'type', 'machine_id', 'overtaken_by_user_id', 'challenge_id', 'title', 'body', 'read_at'])]
 class RankNotification extends Model
 {
     use HasFactory;

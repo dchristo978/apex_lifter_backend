@@ -11,7 +11,7 @@ class MachineController extends Controller
     public function index(): JsonResponse
     {
         return response()->json([
-            'machines' => Machine::orderBy('category')->orderBy('name')->get(),
+            'machines' => Machine::orderBy('muscle_group')->orderBy('name')->get(),
         ]);
     }
 }

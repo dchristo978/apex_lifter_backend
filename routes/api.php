@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ChallengeController;
 use App\Http\Controllers\Api\GymController;
 use App\Http\Controllers\Api\LeaderboardController;
 use App\Http\Controllers\Api\MachineController;
@@ -38,4 +39,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('notifications', [NotificationController::class, 'index']);
     Route::post('notifications/read-all', [NotificationController::class, 'markAllRead']);
+
+    // Challenges & Arena
+    Route::get('challenges', [ChallengeController::class, 'index']);
+    Route::get('challenges/arena', [ChallengeController::class, 'arena']);
+    Route::get('challenges/history', [ChallengeController::class, 'history']);
+    Route::post('challenges', [ChallengeController::class, 'store']);
+    Route::get('challenges/{challenge}', [ChallengeController::class, 'show']);
+    Route::post('challenges/{challenge}/video', [ChallengeController::class, 'submitVideo']);
+    Route::post('challenges/{challenge}/decline', [ChallengeController::class, 'decline']);
+    Route::post('challenges/{challenge}/cancel', [ChallengeController::class, 'cancel']);
+    Route::post('challenges/{challenge}/vote', [ChallengeController::class, 'vote']);
 });

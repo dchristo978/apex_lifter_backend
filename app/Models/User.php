@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Fortify\Contracts\PasskeyUser;
@@ -88,9 +89,77 @@ class User extends Authenticatable implements PasskeyUser
         return $this->hasMany(RankNotification::class);
     }
 
+    public function challengesMade(): HasMany
+    {
+        return $this->hasMany(Challenge::class, 'challenger_id');
+    }
+
+    public function challengesReceived(): HasMany
+    {
+        return $this->hasMany(Challenge::class, 'opponent_id');
+    }
+
+    /**
+     * Number of medals earned — one per challenge won. Shown under the avatar
+     * on the public profile.
+     */
+    public function medalsCount(): int
+    {
+        return Challenge::query()
+            ->where('winner_id', $this->id)
+            ->where('status', Challenge::STATUS_COMPLETED)
+            ->count();
+    }
+
     public function age(): ?int
     {
         return $this->birth_date?->age;
+    }
+
+    /**
+     * Consecutive-week gym streak. A calendar week (Mon–Sun) counts toward the
+     * streak when the lifter logged at least one set in it. Counting starts at
+     * the current week and walks backwards over uninterrupted weeks. The current
+     * week not yet having a session does NOT break the streak — it stays alive
+     * until the week ends — so when this week is empty, counting starts from
+     * last week instead. Returns 0 once a full week is missed.
+     */
+    public function weekStreak(): int
+    {
+        // Distinct week-start (Monday) dates the lifter trained on. A lifter's
+        // set history is small enough to fold in PHP, which keeps this portable
+        // across the sqlite/mysql drivers rather than relying on DB week funcs.
+        $weeks = $this->workoutSets()
+            ->orderByDesc('performed_at')
+            ->pluck('performed_at')
+            ->map(fn (CarbonInterface $at) => $at->startOfWeek()->toDateString())
+            ->flip();
+
+        if ($weeks->isEmpty()) {
+            return 0;
+        }
+
+        // now() is a CarbonImmutable in this app (see AppServiceProvider), so
+        // every ->subWeek() must be reassigned — it never mutates in place.
+        $cursor = now()->startOfWeek();
+
+        // If nothing this week yet, the streak survives as long as last week
+        // had a session; otherwise it's broken.
+        if (! $weeks->has($cursor->toDateString())) {
+            $cursor = $cursor->subWeek();
+
+            if (! $weeks->has($cursor->toDateString())) {
+                return 0;
+            }
+        }
+
+        $streak = 0;
+        while ($weeks->has($cursor->toDateString())) {
+            $streak++;
+            $cursor = $cursor->subWeek();
+        }
+
+        return $streak;
     }
 
     /**

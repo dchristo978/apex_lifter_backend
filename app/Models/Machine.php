@@ -13,11 +13,12 @@ use Illuminate\Support\Carbon;
  * @property string $name
  * @property string $brand
  * @property string $category
+ * @property string|null $muscle_group
  * @property string|null $description
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'brand', 'category', 'description'])]
+#[Fillable(['name', 'brand', 'category', 'muscle_group', 'description'])]
 class Machine extends Model
 {
     use HasFactory;
