@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 
 class ChallengeService
 {
+    public function __construct(private readonly PushNotifier $push) {}
+
     /**
      * Vote tally for a challenge.
      *
@@ -119,12 +121,12 @@ class ChallengeService
     }
 
     /**
-     * Create an in-app notification tied to a challenge. (Push delivery is left
-     * for a later milestone; these show in the notifications feed.)
+     * Create an in-app notification tied to a challenge and push it to the
+     * recipient's device (best-effort; the feed entry is the source of truth).
      */
     public function notify(User $recipient, Challenge $challenge, string $type, string $title, string $body): void
     {
-        RankNotification::create([
+        $notification = RankNotification::create([
             'user_id' => $recipient->id,
             'type' => $type,
             'machine_id' => $challenge->machine_id,
@@ -132,5 +134,7 @@ class ChallengeService
             'title' => $title,
             'body' => $body,
         ]);
+
+        $this->push->notify($notification);
     }
 }

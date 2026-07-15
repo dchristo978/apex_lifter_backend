@@ -3,14 +3,14 @@
 namespace App\Services;
 
 use App\Models\RankNotification;
-use App\Models\User;
 use App\Models\WorkoutSet;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
 
 class LeaderboardService
 {
+    public function __construct(private readonly PushNotifier $push) {}
+
     /**
      * Ranked leaderboard for one machine.
      *
@@ -152,17 +152,7 @@ class LeaderboardService
 
     private function sendPush(RankNotification $notification): void
     {
-        $token = User::find($notification->user_id)?->fcm_token;
-
-        if ($token === null) {
-            return;
-        }
-
-        // TODO(MVP-2): integrate FCM HTTP v1. For now in-app notifications only.
-        Log::info('Push notification queued (FCM not yet configured)', [
-            'notification_id' => $notification->id,
-            'user_id' => $notification->user_id,
-        ]);
+        $this->push->notify($notification);
     }
 
     public static function periodStart(string $period): CarbonInterface

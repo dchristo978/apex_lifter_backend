@@ -56,6 +56,25 @@ All routes are under `/api`. Everything except register/login and public gym bro
 | Challenges | `GET challenges`, `GET challenges/arena`, `GET challenges/history`, `POST challenges`, `GET challenges/{id}`, `POST challenges/{id}/video`, `POST challenges/{id}/decline`, `POST challenges/{id}/cancel`, `POST challenges/{id}/vote`, `PATCH challenges/{id}/medal-note` |
 | Notifications | `GET notifications`, `POST notifications/read-all` |
 
+Devices register for push by sending their FCM token as `fcm_token` on `PATCH profile`.
+
+## Push notifications (FCM)
+
+Every notification is written to the in-app feed (`RankNotification`) and then delivered to the recipient's device via **Firebase Cloud Messaging HTTP v1** (`App\Services\PushNotifier`). Rank-overtaken alerts and all challenge events (`challenge_received`, `challenge_active`, `challenge_won`, `challenge_lost`, `challenge_declined`) are pushed. A dead token (app uninstalled / rotated) is detected from the FCM response and cleared automatically.
+
+Push is **optional**: with the env vars below unset, `PushNotifier` is a no-op and the app runs on in-app notifications alone — so local dev needs no Firebase at all.
+
+To enable it:
+
+1. Create a Firebase project and generate a **service-account key** (Project settings → Service accounts → Generate new private key). Save the JSON outside version control.
+2. Set the env vars:
+   ```dotenv
+   FCM_PROJECT_ID=your-firebase-project-id
+   FCM_CREDENTIALS=/absolute/path/to/service-account.json
+   ```
+
+The OAuth access token minted from the key is cached for ~50 min, so a burst of notifications makes at most one token request. Delivery is best-effort and never fails the request that triggered it.
+
 ## Getting started
 
 ```bash

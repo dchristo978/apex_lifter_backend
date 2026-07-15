@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    // Firebase Cloud Messaging (push). Leave unset to disable push entirely —
+    // the app still works and notifications remain in the in-app feed.
+    // `credentials` is the absolute path to a Firebase service-account JSON key.
+    'fcm' => [
+        'project_id' => env('FCM_PROJECT_ID'),
+        'credentials' => env('FCM_CREDENTIALS'),
+    ],
+
 ];
