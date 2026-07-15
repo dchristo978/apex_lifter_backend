@@ -15,13 +15,16 @@ use Illuminate\Support\Facades\Route;
 Route::post('auth/register', [AuthController::class, 'register']);
 Route::post('auth/login', [AuthController::class, 'login']);
 
+// Public: gym locations and their leaderboards are browsable without login.
+Route::get('gyms', [GymController::class, 'index']);
+Route::get('gyms/{gym}/leaderboard', [GymController::class, 'leaderboard']);
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::get('auth/me', [AuthController::class, 'me']);
     Route::patch('profile', [ProfileController::class, 'update']);
     Route::post('profile/avatar', [ProfileController::class, 'uploadAvatar']);
 
-    Route::get('gyms', [GymController::class, 'index']);
     Route::post('gyms/checkin', [GymController::class, 'checkin']);
     Route::get('gyms/checkin/latest', [GymController::class, 'latestCheckin']);
     Route::get('gyms/{gym}/active-checkins', [GymController::class, 'activeCheckins']);

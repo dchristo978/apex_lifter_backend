@@ -5,14 +5,57 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Checkin;
 use App\Models\Gym;
+use App\Models\WorkoutSet;
+use App\Services\LeaderboardService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Validation\Rule;
 
 class GymController extends Controller
 {
     public function index(): JsonResponse
     {
         return response()->json(['gyms' => Gym::orderBy('name')->get()]);
+    }
+
+    /**
+     * Public per-gym leaderboard: each lifter's best set logged at this gym
+     * within the period, ranked by estimated 1RM.
+     */
+    public function leaderboard(Request $request, Gym $gym): JsonResponse
+    {
+        $data = $request->validate([
+            'period' => ['sometimes', Rule::in(['weekly', 'monthly'])],
+        ]);
+        $period = $data['period'] ?? 'weekly';
+
+        $entries = WorkoutSet::query()
+            ->with(['user:id,name,avatar_path', 'machine:id,name'])
+            ->where('gym_id', $gym->id)
+            ->where('performed_at', '>=', LeaderboardService::periodStart($period))
+            ->get()
+            ->groupBy('user_id')
+            ->map(fn (Collection $sets) => $sets->sortByDesc('estimated_1rm')->first())
+            ->sortByDesc('estimated_1rm')
+            ->values()
+            ->map(fn (WorkoutSet $set, int $index) => [
+                'rank' => $index + 1,
+                'user_id' => $set->user_id,
+                'user_name' => $set->user->name,
+                'avatar_url' => $set->user->avatarUrl(),
+                'value' => $set->estimated_1rm,
+                'weight_kg' => $set->weight_kg,
+                'reps' => $set->reps,
+                'machine_name' => $set->machine->name,
+                'performed_at' => $set->performed_at->toIso8601String(),
+            ]);
+
+        return response()->json([
+            'gym' => ['id' => $gym->id, 'name' => $gym->name, 'address' => $gym->address],
+            'period' => $period,
+            'entries' => $entries,
+        ]);
     }
 
     /**
