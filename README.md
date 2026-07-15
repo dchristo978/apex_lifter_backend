@@ -45,7 +45,8 @@ All routes are under `/api`. Everything except register/login and public gym bro
 
 | Area | Endpoints |
 |---|---|
-| Auth | `POST auth/register`, `POST auth/login`, `POST auth/logout`, `GET auth/me` |
+| Auth | `POST auth/register`, `POST auth/login`, `POST auth/logout`, `GET auth/me`, `DELETE auth/account` |
+| Password reset | `POST auth/forgot-password` (emails a 6-digit code), `POST auth/reset-password` (code → new password, signs in) |
 | Profile | `PATCH profile`, `POST profile/avatar` |
 | Gyms | `GET gyms` (public), `GET gyms/{gym}/leaderboard` (public), `POST gyms/checkin`, `GET gyms/checkin/latest`, `GET gyms/{gym}/active-checkins` |
 | Machines & progress | `GET machines`, `GET machines/{machine}/progress` |
@@ -66,6 +67,8 @@ php artisan migrate
 php artisan storage:link         # avatars + proof videos are served from the public disk
 php artisan serve                # http://127.0.0.1:8000
 ```
+
+Password-reset codes are emailed via the configured mailer. The default `MAIL_MAILER=log` writes them to `storage/logs/laravel.log` (fine for local dev); configure a real mailer before release so lifters actually receive their codes.
 
 Challenge resolution needs the scheduler in local dev:
 

@@ -15,6 +15,12 @@ use Illuminate\Support\Facades\Route;
 Route::post('auth/register', [AuthController::class, 'register']);
 Route::post('auth/login', [AuthController::class, 'login']);
 
+// Password reset by emailed code (throttled to curb abuse / email enumeration).
+Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword'])
+    ->middleware('throttle:6,1');
+Route::post('auth/reset-password', [AuthController::class, 'resetPassword'])
+    ->middleware('throttle:6,1');
+
 // Public: gym locations and their leaderboards are browsable without login.
 Route::get('gyms', [GymController::class, 'index']);
 Route::get('gyms/{gym}/leaderboard', [GymController::class, 'leaderboard']);
@@ -22,6 +28,7 @@ Route::get('gyms/{gym}/leaderboard', [GymController::class, 'leaderboard']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::get('auth/me', [AuthController::class, 'me']);
+    Route::delete('auth/account', [AuthController::class, 'deleteAccount']);
     Route::patch('profile', [ProfileController::class, 'update']);
     Route::post('profile/avatar', [ProfileController::class, 'uploadAvatar']);
 
