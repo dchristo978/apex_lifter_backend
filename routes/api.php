@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ChallengeController;
 use App\Http\Controllers\Api\FeedController;
 use App\Http\Controllers\Api\FollowController;
 use App\Http\Controllers\Api\GymController;
+use App\Http\Controllers\Api\InsightsController;
 use App\Http\Controllers\Api\LeaderboardController;
 use App\Http\Controllers\Api\MachineController;
 use App\Http\Controllers\Api\NotificationController;
@@ -66,6 +67,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('workout-sets/{workoutSet}', [WorkoutSetController::class, 'destroy']);
 
     Route::get('leaderboard', [LeaderboardController::class, 'show']);
+
+    // Long-term retention insights (heatmap, muscle balance/activation, standards)
+    Route::get('insights/heatmap', [InsightsController::class, 'heatmap']);
+    Route::get('insights/muscle-activation', [InsightsController::class, 'muscleActivation']);
+    Route::get('insights/strength-standards', [InsightsController::class, 'strengthStandards']);
 
     Route::get('notifications', [NotificationController::class, 'index']);
     Route::post('notifications/read-all', [NotificationController::class, 'markAllRead']);
