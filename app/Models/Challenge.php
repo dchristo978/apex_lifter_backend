@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Storage;
  * @property Carbon|null $voting_ends_at
  * @property int|null $winner_id
  * @property Carbon|null $resolved_at
+ * @property string|null $medal_note
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -35,16 +36,20 @@ use Illuminate\Support\Facades\Storage;
     'target_weight_kg', 'target_reps', 'target_sets', 'status',
     'challenger_video_path', 'opponent_video_path',
     'challenger_submitted_at', 'opponent_submitted_at',
-    'voting_ends_at', 'winner_id', 'resolved_at',
+    'voting_ends_at', 'winner_id', 'resolved_at', 'medal_note',
 ])]
 class Challenge extends Model
 {
     use HasFactory;
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_DECLINED = 'declined';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     /** Arena voting window once both proofs are in. */

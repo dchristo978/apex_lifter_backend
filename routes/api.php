@@ -34,6 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('users/{user}', [UserController::class, 'show']);
     Route::get('users/{user}/sessions', [UserController::class, 'sessions']);
+    Route::get('users/{user}/medals', [UserController::class, 'medals']);
 
     Route::get('workout-sets', [WorkoutSetController::class, 'index']);
     Route::post('workout-sets', [WorkoutSetController::class, 'store']);
@@ -53,4 +54,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('challenges/{challenge}/decline', [ChallengeController::class, 'decline']);
     Route::post('challenges/{challenge}/cancel', [ChallengeController::class, 'cancel']);
     Route::post('challenges/{challenge}/vote', [ChallengeController::class, 'vote']);
+    Route::patch('challenges/{challenge}/medal-note', [ChallengeController::class, 'updateMedalNote']);
 });

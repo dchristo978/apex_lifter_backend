@@ -282,6 +282,34 @@ class ChallengeController extends Controller
         return response()->json(['challenge' => $this->serialize($challenge, $user)]);
     }
 
+    /**
+     * Set (or clear) the free-text story the winner attaches to their medal.
+     * Owner-only, at most 100 words.
+     */
+    public function updateMedalNote(Request $request, Challenge $challenge): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($challenge->status !== Challenge::STATUS_COMPLETED
+            || $challenge->winner_id !== $user->id) {
+            abort(403, 'Only the medal owner can write its story.');
+        }
+
+        $data = $request->validate([
+            'note' => ['nullable', 'string', 'max:1000', function (string $attribute, mixed $value, \Closure $fail) {
+                $words = preg_split('/\s+/u', trim((string) $value), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+                if (count($words) > 100) {
+                    $fail('The medal story may be at most 100 words.');
+                }
+            }],
+        ]);
+
+        $note = trim((string) ($data['note'] ?? ''));
+        $challenge->update(['medal_note' => $note === '' ? null : $note]);
+
+        return response()->json(['medal_note' => $challenge->medal_note]);
+    }
+
     private function canJudgeGym(Challenge $challenge, User $user): bool
     {
         if ($challenge->gym_id === null) {

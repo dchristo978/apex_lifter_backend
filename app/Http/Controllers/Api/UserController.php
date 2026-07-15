@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Challenge;
 use App\Models\User;
 use App\Models\WorkoutSet;
 use Illuminate\Http\JsonResponse;
@@ -46,6 +47,52 @@ class UserController extends Controller
                 'badges' => [],
                 'medals' => $user->medalsCount(),
             ],
+        ]);
+    }
+
+    /**
+     * The lifter's medal case: one medal per completed challenge they won,
+     * newest first, including the free-text story the winner attached to it.
+     * Visible to anyone; only the owner may edit a story
+     * (see ChallengeController::updateMedalNote).
+     */
+    public function medals(Request $request, User $user): JsonResponse
+    {
+        $viewer = $request->user();
+
+        $wins = Challenge::query()
+            ->with(['challenger', 'opponent', 'machine', 'gym'])
+            ->where('status', Challenge::STATUS_COMPLETED)
+            ->where('winner_id', $user->id)
+            ->latest('resolved_at')
+            ->get();
+
+        return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'avatar_url' => $user->avatarUrl(),
+            ],
+            'is_owner' => $viewer->id === $user->id,
+            'medals' => $wins->map(function (Challenge $c) use ($user) {
+                $defeated = $c->challenger_id === $user->id ? $c->opponent : $c->challenger;
+
+                return [
+                    'challenge_id' => $c->id,
+                    'machine_name' => $c->machine?->name,
+                    'gym_name' => $c->gym?->name,
+                    'defeated' => $defeated === null ? null : [
+                        'id' => $defeated->id,
+                        'name' => $defeated->name,
+                        'avatar_url' => $defeated->avatarUrl(),
+                    ],
+                    'target_weight_kg' => $c->target_weight_kg,
+                    'target_reps' => $c->target_reps,
+                    'target_sets' => $c->target_sets,
+                    'won_at' => $c->resolved_at?->toIso8601String(),
+                    'note' => $c->medal_note,
+                ];
+            })->all(),
         ]);
     }
 
